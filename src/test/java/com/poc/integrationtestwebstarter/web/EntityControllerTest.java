@@ -40,10 +40,18 @@ class EntityControllerTest {
     @Autowired
     EntityRepository repository;
 
-    final ObjectWriter objectWriter = new ObjectMapper().writer().withDefaultPrettyPrinter();
+    final ObjectMapper objectMapper = new ObjectMapper();
+
+    final ObjectWriter objectWriter;
+
+    EntityControllerTest() {
+        this.objectWriter = objectMapper.writer().withDefaultPrettyPrinter();
+        ;
+    }
 
     @BeforeEach
     void init() {
+        repository.deleteAll();
         this.mockMvc = MockMvcBuilders.webAppContextSetup(this.webApplicationContext).build();
     }
 
@@ -64,11 +72,16 @@ class EntityControllerTest {
         Entity storedEntity = new Entity(1, "test entity");
         repository.save(storedEntity);
 
-        // when-then
-        mockMvc.perform(get("/entities/" + storedEntity.getId()))
+        // when
+        String output = mockMvc.perform(get("/entities/" + storedEntity.getId()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(storedEntity.getId()))
-                .andExpect(jsonPath("$.description").value(storedEntity.getDescription()));
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        // then
+        Entity result = objectMapper.readValue(output, Entity.class);
+        assertEquals(storedEntity, result);
     }
 
     @Test
@@ -113,7 +126,7 @@ class EntityControllerTest {
 
         // then
         Entity updatedEntity = repository.findById(storedEntity.getId()).orElseThrow();
-        assertEquals(updatedEntity, update );
+        assertEquals(updatedEntity, update);
     }
 
     @Test
