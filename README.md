@@ -6,6 +6,4 @@ For repository testing testcontainers are used, which are built for the tests, a
 
 ### Notes
 
-Mapping is not included in the project for being a POC for integration tests, not for building a production code.
-
 The testcontainer interface uses postgres as implementation, however the implementor could be swapped for any other database system.
